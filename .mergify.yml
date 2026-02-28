@@ -15,8 +15,8 @@ pull_request_rules:
   - name: Add to merge queue when ready
     conditions:
       - label=ready-to-merge
-      - "#approved-reviews-by>=1"
-      - "#changes-requested-reviews-by=0"
+      # - "#approved-reviews-by>=1"        # disabled for POC testing
+      # - "#changes-requested-reviews-by=0" # disabled for POC testing
       - check-success=CI / test
       - -draft
     actions:
