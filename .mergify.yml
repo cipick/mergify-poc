@@ -2,7 +2,7 @@ queue_rules:
   - name: default
     # Conditions that a PR must meet to be merged from the queue
     merge_conditions:
-      - check-success=CI / test
+      - check-success=test
     # Batch up to 2 PRs together before merging
     batch_size: 2
     batch_max_wait_time: 10 min
@@ -17,7 +17,7 @@ pull_request_rules:
       - label=ready-to-merge
       # - "#approved-reviews-by>=1"        # disabled for POC testing
       # - "#changes-requested-reviews-by=0" # disabled for POC testing
-      - check-success=CI / test
+      - check-success=test
       - -draft
     actions:
       queue:
