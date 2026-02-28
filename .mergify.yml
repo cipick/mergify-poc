@@ -1,0 +1,97 @@
+queue_rules:
+  - name: default
+    # Conditions that a PR must meet to be merged from the queue
+    merge_conditions:
+      - check-success=CI / test
+    # Batch up to 2 PRs together before merging
+    batch_size: 2
+    batch_max_wait_time: 10 min
+
+pull_request_rules:
+  # ──────────────────────────────────────────────────────────────
+  # MERGE QUEUE + AUTO-MERGE
+  # Add to the merge queue when all requirements are satisfied
+  # ──────────────────────────────────────────────────────────────
+  - name: Add to merge queue when ready
+    conditions:
+      - label=ready-to-merge
+      - "#approved-reviews-by>=1"
+      - "#changes-requested-reviews-by=0"
+      - check-success=CI / test
+      - -draft
+    actions:
+      queue:
+        name: default
+
+  # ──────────────────────────────────────────────────────────────
+  # REQUEST REVIEWS
+  # Automatically request a review from the repo owner on any
+  # non-draft PR that has no approvals yet and is not WIP
+  # ──────────────────────────────────────────────────────────────
+  - name: Request review from code owner
+    conditions:
+      - -draft
+      - "#approved-reviews-by=0"
+      - -label=WIP
+    actions:
+      request_reviews:
+        users:
+          - cipick
+
+  # ──────────────────────────────────────────────────────────────
+  # LABEL AUTOMATION — WIP
+  # ──────────────────────────────────────────────────────────────
+  - name: Add WIP label when title starts with WIP
+    conditions:
+      - "title~=^WIP"
+    actions:
+      label:
+        add:
+          - WIP
+
+  - name: Remove WIP label when title no longer starts with WIP
+    conditions:
+      - "title!~=^WIP"
+      - label=WIP
+    actions:
+      label:
+        remove:
+          - WIP
+
+  # ──────────────────────────────────────────────────────────────
+  # LABEL AUTOMATION — PR size
+  # ──────────────────────────────────────────────────────────────
+  - name: Label small PRs (fewer than 10 files changed)
+    conditions:
+      - "files<10"
+    actions:
+      label:
+        add:
+          - size/small
+
+  - name: Label large PRs (more than 50 files changed)
+    conditions:
+      - "files>50"
+    actions:
+      label:
+        add:
+          - size/large
+
+  # ──────────────────────────────────────────────────────────────
+  # LABEL AUTOMATION — branch name conventions
+  # ──────────────────────────────────────────────────────────────
+  - name: Label bug-fix branches
+    conditions:
+      - "head~=^fix/"
+    actions:
+      label:
+        add:
+          - bug
+
+  - name: Label feature branches
+    conditions:
+      - "head~=^feat/"
+    actions:
+      label:
+        add:
+          - feature
