@@ -14,7 +14,7 @@ export function Button({ label, variant = 'primary', disabled = false, onClick }
     <button
       className={`btn btn-${variant}`}
       disabled={disabled}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       aria-disabled={disabled}
     >
       {label}
