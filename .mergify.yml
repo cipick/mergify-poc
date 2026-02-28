@@ -1,102 +1,19 @@
-queue_rules:
-  - name: default
-    # Conditions a PR must meet to ENTER the queue
-    queue_conditions:
-      - check-success=test
-      - label=ready-to-merge
-      - -draft
-    # Conditions that must hold to actually merge out of the queue
-    merge_conditions:
-      - check-success=test
-    # Batch up to 2 PRs together before merging
-    batch_size: 2
-    batch_max_wait_time: 10 min
-
 pull_request_rules:
-  # ──────────────────────────────────────────────────────────────
-  # MERGE QUEUE + AUTO-MERGE
-  # Add to the merge queue when all requirements are satisfied
-  # ──────────────────────────────────────────────────────────────
-  - name: Add to merge queue when ready
+  - name: Notify when a PR is removed from the queue
+    description: Notify the PR author when its pull request is removed from the merge queue.
     conditions:
-      - label=ready-to-merge
-      # - "#approved-reviews-by>=1"        # disabled for POC testing
-      # - "#changes-requested-reviews-by=0" # disabled for POC testing
-      - check-success=test
-      - -draft
+      - queue-dequeue-reason != none
+      - queue-dequeue-reason != pr-merged
     actions:
-      queue:
-        name: default
+      comment:
+        message: >
+          Hey @{{author}}, your pull request has been dequeued due to the
+          following reason: {{queue_dequeue_reason}}.
 
-  # ──────────────────────────────────────────────────────────────
-  # REQUEST REVIE
-  # Automatically request a review from the repo owner on any
-  # non-draft PR that has no approvals yet and is not WIP
-  # ──────────────────────────────────────────────────────────────
-  - name: Request review from code owner
-    conditions:
-      - -draft
-      - "#approved-reviews-by=0"
-      - -label=WIP
-    actions:
-      request_reviews:
-        users:
-          - cipick
-
-  # ──────────────────────────────────────────────────────────────
-  # LABEL AUTOMATION — WIP
-  # ──────────────────────────────────────────────────────────────
-  - name: Add WIP label when title starts with WIP
-    conditions:
-      - "title~=^WIP"
-    actions:
-      label:
-        add:
-          - WIP
-
-  - name: Remove WIP label when title no longer starts with WIP
-    conditions:
-      - "title!~=^WIP"
-      - label=WIP
-    actions:
-      label:
-        remove:
-          - WIP
-
-  # ──────────────────────────────────────────────────────────────
-  # LABEL AUTOMATION — PR size
-  # ──────────────────────────────────────────────────────────────
-  - name: Label small PRs (fewer than 10 files changed)
-    conditions:
-      - "files<10"
-    actions:
-      label:
-        add:
-          - size/small
-
-  - name: Label large PRs (more than 50 files changed)
-    conditions:
-      - "files>50"
-    actions:
-      label:
-        add:
-          - size/large
-
-  # ──────────────────────────────────────────────────────────────
-  # LABEL AUTOMATION — branch name conventions
-  # ──────────────────────────────────────────────────────────────
-  - name: Label bug-fix branches
-    conditions:
-      - "head~=^fix/"
-    actions:
-      label:
-        add:
-          - bug
-
-  - name: Label feature branches
-    conditions:
-      - "head~=^feat/"
-    actions:
-      label:
-        add:
-          - feature
+          Sorry about that, but you can requeue the PR by using `@mergifyio
+          requeue` if you think this was a mistake.
+queue_rules:
+  - name: test
+    checks_timeout: 10 m
+    update_method: rebase
+    autoqueue: true
