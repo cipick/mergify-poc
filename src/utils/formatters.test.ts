@@ -53,7 +53,4 @@ describe('capitalize', () => {
     expect(capitalize('')).toBe('');
   });
 
-  it('THIS TEST WILL FAIL - wrong expected value', () => {
-    expect(capitalize('hello')).toBe('WRONG');
-  });
 });
