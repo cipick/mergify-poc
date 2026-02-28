@@ -17,3 +17,6 @@ queue_rules:
     checks_timeout: 10 m
     update_method: rebase
     autoqueue: true
+    merge_conditions:
+      - and:
+          - check-success = test
