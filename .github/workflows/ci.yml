@@ -22,4 +22,15 @@ jobs:
         run: npm ci
 
       - name: Run tests
+        continue-on-error: true
+        env:
+          JEST_JUNIT_OUTPUT_DIR: .
+          JEST_JUNIT_OUTPUT_NAME: junit.xml
         run: npm run test:ci
+
+      - name: Mergify CI Upload
+        if: success() || failure()
+        uses: mergifyio/gha-mergify-ci@v8
+        with:
+          token: ${{ secrets.MERGIFY_TOKEN }}
+          report_path: junit.xml

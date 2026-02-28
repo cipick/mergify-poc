@@ -2,6 +2,10 @@
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
+  reporters: [
+    'default',
+    ['jest-junit', { outputDirectory: '.', outputName: 'junit.xml' }],
+  ],
   coverageThreshold: {
     global: {
       lines: 80,
